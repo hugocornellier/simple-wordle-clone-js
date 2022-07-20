@@ -9,6 +9,7 @@ function submit()
     {
         var index = 0;
         var win = 0;
+        const entered_word = get_entered_word(currBoxes);
         if (all_words.includes(get_entered_word(currBoxes)))
         {
             resetSubmitButton();
@@ -21,19 +22,26 @@ function submit()
                 if (currLetter == compareTo)
                 {
                     console.log("perfect match at " + index);
-                    el.style.border = "1px solid green";
-                    el.style.color = "green";
+                    el.style.backgroundColor = "green";
+                    el.style.color = "white";
                     win++;
                 }
                 // Indirect match
                 else if (word.includes(currLetter))
                 {
                     console.log("indirect match at " + index);
-                    el.style.border = "1px solid orange";
-                    el.style.color = "orange";
+                    el.style.backgroundColor = "orange";
+                    el.style.color = "white";
                 }
                 index++;
             }
+            const arr = entered_word.split("");
+            document.querySelectorAll('.letter-box-clickable').forEach(box => {
+                var curr = box.innerHTML;
+                if (arr.includes(curr.toLowerCase())) {
+                    box.style.border = "1px solid grey";
+                }
+            });
             currRow.classList.remove("unsent");
             currRow.classList.remove("active");
         }
@@ -76,7 +84,7 @@ function erase()
         currBox.innerHTML = "";
         currBox.classList.remove("filled");
         currBox.classList.add("empty");
-        currBox.style.border = "1px solid #eee";
+        currBox.style.background = "white";
     }
 }
 
@@ -91,7 +99,8 @@ function add_letter(letter)
         currBox.innerHTML = letter;
         currBox.classList.remove("empty");
         currBox.classList.add("filled");
-        currBox.style.border = "1px solid grey";
+        currBox.style.backgroundColor = "grey";
+        currBox.style.color = "white";
     }
 
     if (boxesRemaining == 0)
@@ -155,8 +164,26 @@ function KeyPress(e)
     // Detect ctrl+z/cmd+z & erase/delete
     if ((evtobj.keyCode == 90 && (e.ctrlKey || e.metaKey))|| key == 8)
         erase();
+
+    // Detect characters entered via keyboard
+    if (isCharacterKeyPress(e))
+        add_letter(String.fromCharCode(key));
+
 }
 document.onkeydown = KeyPress;
+
+function isCharacterKeyPress(evt) {
+    if (typeof evt.which == "undefined") {
+        // This is IE, which only fires keypress events for printable keys
+        return true;
+    } else if (typeof evt.which == "number" && evt.which > 0) {
+        // In other browsers except old versions of WebKit, evt.which is
+        // only greater than zero if the keypress is a printable key.
+        // We need to filter out backspace and ctrl/alt/meta key combinations
+        return !evt.ctrlKey && !evt.metaKey && !evt.altKey && evt.which != 8;
+    }
+    return false;
+}
 
 // Return user-entered word from active row.
 function get_entered_word(currBoxes)
